@@ -1,0 +1,72 @@
+## Visual Studio / .NET Framework gitignore ##
+
+# Archivos de usuario
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Tt]emp/
+[Tt]mp/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+*.vspscc
+*.vssscc
+*.vsp
+*.vsmdi
+TestResults/
+*.dbmdl
+
+# Visual Studio 2019/2022 folders
+.vs/
+.vscode/
+
+# Paquetes NuGet
+*.nupkg
+*.snupkg
+# Si usas paquetes restaurados automáticamente
+packages/
+!packages/build/
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*.sln.ide
+*.scc
+
+# Archivos de publicación
+publish/
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+
+# Configuración de usuario
+*.userprefs
+
+# Archivos generados por IIS/ASP.NET
+App_Data/
+AppPackages/
+Generated_Code/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Archivos de Azure
+csx/
+*.build.csdef
+
+# Logs
+*.tlog
+*.log
+
+# Otros
+.idea/
+node_modules/
