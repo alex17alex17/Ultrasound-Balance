@@ -56,6 +56,7 @@
     <None Include="WiimoteLib_Extras\samples.zip" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Sql Scripts\CrearTablaDatosIniciales.sql" />
     <Content Include="WiimoteLib_Extras\docs\copyright.txt" />
     <Content Include="WiimoteLib_Extras\docs\license.txt" />
     <Content Include="WiimoteLib_Extras\MSRS\Wiimote.Y2007.M06.dll" />
