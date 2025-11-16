@@ -70,6 +70,8 @@
     <Content Include="WiimoteLib_Extras\MSRS\Wiimote.Y2007.M06.Transform.dll" />
     <Content Include="WiimoteLib_Readme.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ScriptsPython\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
