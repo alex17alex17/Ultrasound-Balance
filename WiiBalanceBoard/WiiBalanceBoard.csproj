@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Informe Power BI\v1.2.0.pbix" />
     <None Include="packages.config" />
     <None Include="ScriptsPython\Preprocesamiento_1.ipynb" />
     <None Include="ScriptsPython\Preprocesamiento_2.ipynb" />
