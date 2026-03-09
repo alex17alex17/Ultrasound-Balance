@@ -9,8 +9,8 @@ ConnectionString = (
     r"Trusted_Connection=yes;"
 )
 
-def ObtenerLecturasBalanceDeBD(usuarioId = 1):
-    query_ConsultaLecturasBalance = f'SELECT Id, UsuarioId, NumeroPruebas, TopLeft, TopRight, BottomLeft, BottomRight, COP_X, COP_Y, Total, TimeStamp FROM LecturasBalanceBoard where UsuarioId = {usuarioId} ORDER BY TimeStamp ASC;'
+def ObtenerLecturasBalanceDeBD(usuarioId = 1, numeroPruebas = 1):
+    query_ConsultaLecturasBalance = f'SELECT Id, UsuarioId, NumeroPruebas, TopLeft, TopRight, BottomLeft, BottomRight, COP_X, COP_Y, Total, TimeStamp FROM LecturasBalanceBoard where UsuarioId = {usuarioId} and NumeroPruebas = {numeroPruebas} ORDER BY TimeStamp ASC;'
     
     """Conecta a SQL Server y devuelve un DataFrame con todas las filas ordenadas por TimeStamp asc."""
     
@@ -48,22 +48,8 @@ def Insertar_dataframe(df, table_name, usuarioId, numeroPruebas):
 
     # Seleccionamos solo las columnas que existen en la tabla destino
     cols = [
-            "UsuarioId", "NumeroPruebas", "COP_X", "COP_Y", "Total", "TimeStamp", "TimeStampSegundos"
-        ]
-    if("DistanciaRadial" in df.columns):
-        cols.append("DistanciaRadial")
-        cols.append("Desequilibrio")
-        cols.append("DistanciaRadial_X")
-        cols.append("Desequilibrio_X")
-        cols.append("DistanciaRadial_Y")
-        cols.append("Desequilibrio_Y")
-        cols.append("Desplazamiento")
-        cols.append("Desplazamiento_X")
-        cols.append("Desplazamiento_Y")
-        cols.append("Velocidad")
-        cols.append("Velocidad_X")
-        cols.append("Velocidad_Y")
-        
+        "UsuarioId", "NumeroPruebas", "COP_X", "COP_Y", "Total", "TimeStamp", "TimeStampSegundos"
+    ]
     # Verificamos que existan en el DataFrame
     df_to_insert = df[[c for c in cols if c in df.columns]].copy()
 
