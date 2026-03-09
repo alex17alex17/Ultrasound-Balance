@@ -55,10 +55,19 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="ScriptsPython\Preprocesamiento_1.ipynb" />
+    <None Include="ScriptsPython\Preprocesamiento_2.ipynb" />
+    <None Include="ScriptsPython\Preprocesamiento_3.ipynb" />
     <None Include="WiimoteLib_Extras\docs\WiimoteLib.chm" />
     <None Include="WiimoteLib_Extras\samples.zip" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ScriptsPython\ConsultasBD.py" />
+    <Content Include="ScriptsPython\FiltroButterworth.py" />
+    <Content Include="ScriptsPython\Main.py" />
+    <Content Include="ScriptsPython\MediaMovil.py" />
+    <Content Include="ScriptsPython\Metricas.py" />
+    <Content Include="ScriptsPython\MuestreoEInterpolacion.py" />
     <Content Include="Sql Scripts\CrearTablaDatosIniciales.sql" />
     <Content Include="Sql Scripts\EliminarTablas.sql" />
     <Content Include="Sql Scripts\OtrosScripts.sql" />
@@ -70,8 +79,6 @@
     <Content Include="WiimoteLib_Extras\MSRS\Wiimote.Y2007.M06.Transform.dll" />
     <Content Include="WiimoteLib_Readme.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ScriptsPython\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

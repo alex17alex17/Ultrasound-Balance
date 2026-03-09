@@ -67,8 +67,8 @@ namespace WiiBalanceBoard.Services
         public void ObtenerNumeroDePrueba(SqlConnection conn)
         {
             // 1️⃣ Buscar usuario por nombre y apellido
-            string selectQuery = "SELECT Id, NumeroPruebas FROM Usuarios WHERE Nombre = @Nombre AND Apellido = @Apellido";
-            using (SqlCommand cmd = new SqlCommand(selectQuery, conn))
+            string selectQuery = @"SELECT TOP 1 Id, NumeroPruebas FROM Usuarios WHERE Nombre = @Nombre AND Apellido = @Apellido ORDER BY TimeStamp DESC;
+        "; using (SqlCommand cmd = new SqlCommand(selectQuery, conn))
             {
                 cmd.Parameters.AddWithValue("@Nombre", Usuario.Nombre);
                 cmd.Parameters.AddWithValue("@Apellido", Usuario.Apellido);
