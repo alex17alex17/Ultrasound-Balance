@@ -7,12 +7,15 @@ import FiltroButterworth
 import MediaMovil
 import Metricas
 
-#Datos del usuario que se quiere reprocesar
+#Datos del usuario que se quiere reprocesar. Por defecto. En la ejecución del programa se pasan estos valores como argumentos.
 usuarioId = 27
 numeroPruebas = 1
+
+#Parámetros para el reprocesamiento de datos
 fmuestreo = 100
 fcorte = 10
 ventanaMediaMovil = 100 # la ventana es de 100 muestras que equivale a un segundo
+k = 3 # número de desviaciones estándar para el cálculo del desequilibrio
 
 #Nombres de las tablas de bases de datos
 DB_LecturasBalanceBoard = 'LecturasBalanceBoard'
@@ -21,7 +24,7 @@ DB_LecturasConFiltro = 'LecturasConFiltro'
 DB_LecturasConMediaMovil = 'LecturasConMediaMovil'
 DB_Evaluaciones = 'Evaluaciones'
 
-def CalcularPerdidaDeEquilibrio(df):
+def CalcularPerdidaDeEquilibrioConDistanciaRadial(df):
     #Se define el centro de todas las coordenadas y se calcula la distancia de cada punto a este centro
     xc = df['COP_X'].mean()
     yc = df['COP_Y'].mean()
@@ -47,7 +50,7 @@ def CalcularPerdidaDeEquilibrio(df):
     df['Desequilibrio_Y'] = df['DistanciaRadial_Y'] > Ry
     return df
 
-def CalcularVelocidadYDesplazamientoDeEquilibrio(df):
+def CalcularVelocidadYDesplazamientoYDesequilibriosEnVelocidad(df):
     #Calcula la diferencia entre puntos. El primer elemento es NaN, por ello se coloca un cero
     dx = df['COP_X'].diff().fillna(0)
     dy = df['COP_Y'].diff().fillna(0)
@@ -62,6 +65,19 @@ def CalcularVelocidadYDesplazamientoDeEquilibrio(df):
     df['Velocidad'] = df['Desplazamiento'] / dt
     df['Velocidad_X'] = dx / dt
     df['Velocidad_Y'] = dy / dt
+
+    mu = df['Velocidad'].mean()
+    sigma = df['Velocidad'].std()
+    R = mu + k * sigma
+    df['DesequilibrioVel'] = df['Velocidad'] > R
+
+    abs_dx = df['Velocidad_X'].abs()
+    Rx = abs_dx.mean() + k * abs_dx.std()
+    df['DesequilibrioVel_X'] = df['Velocidad_X'] > Rx
+
+    abs_dy = df['Velocidad_Y'].abs()
+    Ry = abs_dy.mean() + k * abs_dy.std()
+    df['DesequilibrioVel_Y'] = df['Velocidad_Y'] > Ry
 
     return df
 
@@ -83,13 +99,13 @@ def AnadirIntervaloDeTiempoEnSegundos(df):
     )
     return df
 
-def main(usuario_id: int):
+def main(usuario_id: int, configuracion_id: int):
     usuarioId = usuario_id
     #Procesamiento de datos
     dfDatosReales = ConsultasBD.ObtenerLecturasBalanceDeBD(usuarioId)
     dfDatosMuestreados = MuestreoEInterpolacion.Interpolar(dfDatosReales, fs = fmuestreo)
     dfDatosConFiltro = FiltroButterworth.Aplicar_filtro_butterworth(dfDatosMuestreados, fc = fcorte, fs = fmuestreo)
-    #dfDatosMediaMovil = MediaMovil.Aplicar_media_movil(dfDatosConFiltro, ventana = ventanaMediaMovil)
+    #dfDatosMediaMovil = MediaMovil.Aplicar_media_movil(dfDatosConFiltro, ventana = ventanaMediaMovil) #Comentado para ahorrar registros en base de datos, ya que no se emplea
 
     #Se añade una nueva columna con un intervalo de tiempos en segundos
     #dfDatosMuestreados = AnadirIntervaloDeTiempoEnSegundos(dfDatosMuestreados)
@@ -100,12 +116,13 @@ def main(usuario_id: int):
         # Se comenta la siguiente linea para realizar el cálculo empleando 
     #dfDatosMediaMovil = EliminarPrimerYUltimoSegundo(dfDatosMediaMovil, ventana = ventanaMediaMovil). 
     dfDatosConFiltro = EliminarPrimerYUltimoSegundo(dfDatosConFiltro, ventana = ventanaMediaMovil)
-    metricas = Metricas.Calcular_metricas(dfDatosConFiltro, usuarioId=usuarioId, numeroPruebas=numeroPruebas)
+    
 
-    #Calcular la distancia radial
-    dfDatosConFiltro = CalcularPerdidaDeEquilibrio(dfDatosConFiltro)
-    dfDatosConFiltro = CalcularVelocidadYDesplazamientoDeEquilibrio(dfDatosConFiltro)
+    #Calcular pérdidas de equilibrio
+    dfDatosConFiltro = CalcularPerdidaDeEquilibrioConDistanciaRadial(dfDatosConFiltro)
+    dfDatosConFiltro = CalcularVelocidadYDesplazamientoYDesequilibriosEnVelocidad(dfDatosConFiltro)
     #dfDatosMediaMovil = CalcularPerdidaDeEquilibrio(dfDatosMediaMovil)
+    metricas = Metricas.Calcular_metricas(dfDatosConFiltro, usuarioId=usuarioId, numeroPruebas=numeroPruebas)
 
     # Guardar cada etapa en su tabla correspondiente
     #ConsultasBD.Insertar_dataframe(dfDatosMuestreados, DB_LecturasInterpoladas, usuarioId, numeroPruebas)
@@ -114,11 +131,12 @@ def main(usuario_id: int):
     ConsultasBD.Actualizar_tiempos_balanceboard(dfDatosReales, DB_LecturasBalanceBoard)
 
     # Guardar métricas finales
-    ConsultasBD.Insertar_metricas(metricas)
+    ConsultasBD.Insertar_metricas(metricas, configuracion_id)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Reprocesar datos de equilibrio para un usuario.")
     parser.add_argument("usuario_id", type=int, help="ID del usuario (número entero).")
+    parser.add_argument("configuracion_id", type=int, help="ID de configuración (número entero).")  # nuevo argumento
     args = parser.parse_args()
 
-    main(args.usuario_id)
+    main(args.usuario_id, args.configuracion_id)

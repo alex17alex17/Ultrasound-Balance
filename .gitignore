@@ -70,3 +70,6 @@ csx/
 # Otros
 .idea/
 node_modules/
+*.pbix
+__pycache__/
+*.pyc

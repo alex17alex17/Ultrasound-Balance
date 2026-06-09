@@ -46,19 +46,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Objects\LecturaBalance.cs" />
-    <Compile Include="Objects\User.cs" />
+    <Compile Include="Clases\LecturaPlataformaEquilibrio.cs" />
+    <Compile Include="Clases\Usuario.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\UserInterface.cs" />
+    <Compile Include="Clases\InterfazUsuario.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Informe Power BI\v1.2.0.pbix" />
+    <None Include="DiseñoBowl\bowl4_115.stl" />
+    <None Include="Informe Power BI\v1.4.1.pbix" />
     <None Include="packages.config" />
-    <None Include="ScriptsPython\Preprocesamiento_1.ipynb" />
-    <None Include="ScriptsPython\Preprocesamiento_2.ipynb" />
-    <None Include="ScriptsPython\Preprocesamiento_3.ipynb" />
     <None Include="WiimoteLib_Extras\docs\WiimoteLib.chm" />
     <None Include="WiimoteLib_Extras\samples.zip" />
   </ItemGroup>
@@ -69,9 +67,8 @@
     <Content Include="ScriptsPython\MediaMovil.py" />
     <Content Include="ScriptsPython\Metricas.py" />
     <Content Include="ScriptsPython\MuestreoEInterpolacion.py" />
-    <Content Include="Sql Scripts\CrearTablaDatosIniciales.sql" />
-    <Content Include="Sql Scripts\EliminarTablas.sql" />
-    <Content Include="Sql Scripts\OtrosScripts.sql" />
+    <Content Include="ScriptsSQL\1_CrearBaseDeDatos.sql" />
+    <Content Include="ScriptsSQL\2_PoblarTablaMaestra.sql" />
     <Content Include="WiimoteLib_Extras\docs\copyright.txt" />
     <Content Include="WiimoteLib_Extras\docs\license.txt" />
     <Content Include="WiimoteLib_Extras\MSRS\Wiimote.Y2007.M06.dll" />

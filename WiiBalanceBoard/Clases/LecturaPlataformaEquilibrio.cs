@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace WiiBalanceBoard.Objects
+namespace WiiBalanceBoard.Clases
 {
-    public class LecturaBalance
+    public class LecturaPlataformaEquilibrio
     {
         public int Id { get; set; }
         public int? UsuarioId { get; set; }

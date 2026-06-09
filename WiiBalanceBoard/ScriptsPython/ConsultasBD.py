@@ -63,6 +63,9 @@ def Insertar_dataframe(df, table_name, usuarioId, numeroPruebas):
         cols.append("Velocidad")
         cols.append("Velocidad_X")
         cols.append("Velocidad_Y")
+        cols.append("DesequilibrioVel")
+        cols.append("DesequilibrioVel_X")
+        cols.append("DesequilibrioVel_Y")
         
     # Verificamos que existan en el DataFrame
     df_to_insert = df[[c for c in cols if c in df.columns]].copy()
@@ -82,14 +85,18 @@ def Insertar_dataframe(df, table_name, usuarioId, numeroPruebas):
     conn.close()
     print(f"✅ Insertadas {len(df_to_insert)} filas en {table_name}")
 
-def Insertar_metricas(metricas):
+def Insertar_metricas(metricas, configuracionId):
     conn = pyodbc.connect(ConnectionString, timeout=10)
     cursor = conn.cursor()
 
     sql = """
     INSERT INTO Evaluaciones (UsuarioId, NumeroPruebas, Mean_COPX, Mean_COPY,
-                              LongitudTrayectoria, AreaRectangulo, RMS, TimeStamp)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                              LongitudTrayectoria, AreaRectangulo, RMS, TimeStamp, ConfiguracionId, 
+                              PerdidasDesequilibrioVel, PerdidasDesequilibrioVel_X, PerdidasDesequilibrioVel_Y,
+                              DuracionMinimaEnDesequilibrio, DuracionMediaDesequilibrio, DuracionMaximaDesequilibrio, DuracionTotalDesequilibrio,
+                              DuracionMinimaEnDesequilibrio_X, DuracionMediaDesequilibrio_X, DuracionMaximaDesequilibrio_X, DuracionTotalDesequilibrio_X,
+                              DuracionMinimaEnDesequilibrio_Y, DuracionMediaDesequilibrio_Y, DuracionMaximaDesequilibrio_Y, DuracionTotalDesequilibrio_Y)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     values = (
@@ -100,8 +107,30 @@ def Insertar_metricas(metricas):
         metricas["LongitudTrayectoria"],
         metricas["AreaRectangulo"],
         metricas["RMS"],
-        metricas["TimeStamp"]
+        metricas["TimeStamp"],
+        configuracionId,
+        metricas["PerdidasDesequilibrioVel"], 
+        metricas["PerdidasDesequilibrioVel_X"],
+        metricas["PerdidasDesequilibrioVel_Y"],
+        metricas["DuracionMinimaEnDesequilibrio"],
+        metricas["DuracionMediaDesequilibrio"],
+        metricas["DuracionMaximaDesequilibrio"],
+        metricas["DuracionTotalDesequilibrio"],
+        metricas["DuracionMinimaEnDesequilibrio_X"],
+        metricas["DuracionMediaDesequilibrio_X"],
+        metricas["DuracionMaximaDesequilibrio_X"],
+        metricas["DuracionTotalDesequilibrio_X"],
+        metricas["DuracionMinimaEnDesequilibrio_Y"],
+        metricas["DuracionMediaDesequilibrio_Y"],
+        metricas["DuracionMaximaDesequilibrio_Y"],
+        metricas["DuracionTotalDesequilibrio_Y"],
     )
+
+    print("SCRIPT SQL a ejecutar:")
+    print(sql)
+    print("Valores a insertar:")
+    for k, v in metricas.items():
+        print(f"   {k}: {v}")
 
     cursor.execute(sql, values)
     conn.commit()

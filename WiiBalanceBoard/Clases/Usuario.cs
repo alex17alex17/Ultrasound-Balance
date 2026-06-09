@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace WiiBalanceBoard.Objects
+namespace WiiBalanceBoard.Clases
 {
-    public class User
+    public class Usuario
     {
         public int? Id { get; set; }
         public string Nombre { get; set; }
@@ -15,5 +15,7 @@ namespace WiiBalanceBoard.Objects
         public string TipoEfecto { get; set; }
         public string Descripcion { get; set; }
         public DateTime TimeStamp { get; set; }
+
+        public int? ConfiguracionId { get; set; }
     }
 }

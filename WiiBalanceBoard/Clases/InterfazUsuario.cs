@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Data.SqlClient;
-using WiiBalanceBoard.Objects;
+using WiiBalanceBoard.Clases;
 
 namespace WiiBalanceBoard.Services
 {
-    public class UserInterface
+    public class InterfazUsuario
     {
-        public User Usuario { get; set; }
+        public Usuario Usuario { get; set; }
         private static string ConnectionString = "Server=PP-WALL-E\\SQLEXPRESS;Database=Ultrasound;Trusted_Connection=True;";
         public string PathMainPythonScript = @"C:\Users\alexs\Desktop\Preprocesamiento\Main.py";
-        public UserInterface()
+        public InterfazUsuario()
         {
-            Usuario = new User();
+            Usuario = new Usuario();
         }
 
         public void RegistrarUsuario()
@@ -44,8 +44,8 @@ namespace WiiBalanceBoard.Services
         public void InsertarUsuarioEnBD(SqlConnection conn)
         {
             // 2️⃣ Insertar nuevo usuario
-            string insertQuery = "INSERT INTO Usuarios (Nombre, Apellido, Edad, Genero, Altura, Peso, NumeroPruebas, TipoEfecto, Descripcion ,TimeStamp) " +
-                                    "VALUES (@Nombre, @Apellido, @Edad, @Genero, @Altura, @Peso, @NumeroPruebas, @TipoEfecto, @Descripcion, @TimeStamp); " +
+            string insertQuery = "INSERT INTO Usuarios (Nombre, Apellido, Edad, Genero, Altura, Peso, NumeroPruebas, TipoEfecto, Descripcion ,TimeStamp, ConfiguracionId) " +
+                                    "VALUES (@Nombre, @Apellido, @Edad, @Genero, @Altura, @Peso, @NumeroPruebas, @TipoEfecto, @Descripcion, @TimeStamp, @ConfiguracionId); " +
                                     "SELECT SCOPE_IDENTITY();"; //Esto devuelve el Id generado
             using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
             {
@@ -59,6 +59,7 @@ namespace WiiBalanceBoard.Services
                 cmd.Parameters.AddWithValue("@TipoEfecto", (object)Usuario.TipoEfecto ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Descripcion", (object)Usuario.Descripcion ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@TimeStamp", Usuario.TimeStamp);
+                cmd.Parameters.AddWithValue("@ConfiguracionId", Usuario.ConfiguracionId);
                 // Ejecutar y obtener el Id generado
                 Usuario.Id = Convert.ToInt32(cmd.ExecuteScalar());
             }
@@ -92,37 +93,9 @@ namespace WiiBalanceBoard.Services
             Console.Write("Apellido: ");
             Usuario.Apellido = Console.ReadLine().ToUpper();
 
-            Console.Write("Edad (opcional): ");
-            var edadStr = Console.ReadLine();
-            Usuario.Edad = int.TryParse(edadStr, out int edad) ? (int?)edad : null;
-
-            Console.Write("Genero (opcional): ");
-            Usuario.Genero = Console.ReadLine();
-
-            Console.Write("Altura en metros (opcional): ");
-            var alturaStr = Console.ReadLine();
-            Usuario.Altura = float.TryParse(alturaStr, out float altura) ? (float?)altura : null;
-
-            Console.Write("Peso en kg (opcional): ");
-            var pesoStr = Console.ReadLine();
-            Usuario.Peso = float.TryParse(pesoStr, out float peso) ? (float?)peso : null;
-
-            Console.WriteLine("Tipo de efecto. Elige una opción:");
-            Console.WriteLine("1- Con toque ligero");
-            Console.WriteLine("2- Sin toque ligero");
-            Console.WriteLine("3- Otro");
-            Console.Write("Elige una de las opciones anteriores (1/2/3): ");
-            var tipoEfecto = Console.ReadLine();
-            var tipo = "";
-
-            if(tipoEfecto == "1")
-                tipo = "Con toque ligero";
-            else if(tipoEfecto == "2")
-                tipo = "Sin toque ligero";
-            else
-                tipo = "otro";
-
-            Usuario.TipoEfecto = tipo;
+            Console.Write("Id de la configuración: ");
+            var idConfiguracion = Console.ReadLine();
+            Usuario.ConfiguracionId = int.TryParse(idConfiguracion, out int idconfig) ? (int?)idconfig : null;
 
             Console.Write("Descripción de la práctica (opcional): ");
             Usuario.Descripcion = Console.ReadLine();

@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Timers;
-using WiiBalanceBoard.Objects;
+using WiiBalanceBoard.Clases;
 using WiiBalanceBoard.Services;
 using WiimoteLib;
 
@@ -16,21 +16,22 @@ namespace WiiBalanceBoard
         // ⚙️ Configuración
         private static string connectionString = "Server=PP-WALL-E\\SQLEXPRESS;Database=Ultrasound;Trusted_Connection=True;";
 
-        private static List<LecturaBalance> buffer = new List<LecturaBalance>();
+        private static List<LecturaPlataformaEquilibrio> buffer = new List<LecturaPlataformaEquilibrio>();
         private static object lockObj = new object();
         private static Timer batchTimer;
-        private static UserInterface userInterface = new UserInterface();
+        private static InterfazUsuario interfazUsuario = new InterfazUsuario();
         private const int CuentaRegresivaInicialSegundos = 10; // segundos
-        private const int DuracionCapturaSegundos = 32; // segundos
+        private const int DuracionCapturaSegundos = 31; // segundos
         private static bool Capturar;
         private static Wiimote wm;
 
 
         private static void Main()
         {
-            userInterface.RegistrarUsuario();
+            Console.WriteLine("****** Iniciando programa de captura de Wii Balance Board... ******");
+            interfazUsuario.RegistrarUsuario();
 
-            MostrarCuentaRegresiva();;
+            MostrarCuentaRegresiva();
 
             wm = new Wiimote();
             wm.WiimoteChanged += OnWiimoteChanged;
@@ -62,11 +63,7 @@ namespace WiiBalanceBoard
             //Console.ReadLine();
 
             FinalizarCapturaLimpia();
-            //batchTimer.Stop();
-            //FlushBufferToDatabase(); // guarda lo que quede pendiente
-            //wm.Disconnect();
-            
-            EjecutarPython(userInterface.Usuario.Id.Value);
+            EjecutarPython(interfazUsuario.Usuario.Id.Value, interfazUsuario.Usuario.ConfiguracionId.Value);
         }
 
         private static void OnBatchTimerElapsed(object sender, ElapsedEventArgs e)
@@ -130,10 +127,10 @@ namespace WiiBalanceBoard
             float copX = ((TR + BR) - (TL + BL)) / (TL + TR + BL + BR) * (L / 2);
             float copY = ((TL + TR) - (BL + BR)) / (TL + TR + BL + BR) * (W / 2);
 
-            var sample = new LecturaBalance
+            var sample = new LecturaPlataformaEquilibrio
             {
-                UsuarioId = userInterface.Usuario.Id,
-                NumeroPruebas = userInterface.Usuario.NumeroPruebas,
+                UsuarioId = interfazUsuario.Usuario.Id,
+                NumeroPruebas = interfazUsuario.Usuario.NumeroPruebas,
                 TopLeft = TL,
                 TopRight = TR,
                 BottomLeft = BL,
@@ -155,14 +152,14 @@ namespace WiiBalanceBoard
             if (!Capturar)
                 return;
 
-            List<LecturaBalance> copy;
+            List<LecturaPlataformaEquilibrio> copy;
 
             lock (lockObj)
             {
                 if (buffer.Count == 0)
                     return;
 
-                copy = new List<LecturaBalance>(buffer);
+                copy = new List<LecturaPlataformaEquilibrio>(buffer);
                 buffer.Clear();
             }
 
@@ -248,7 +245,7 @@ namespace WiiBalanceBoard
             Console.WriteLine("🛑 Tiempo finalizado. Cerrando captura...");
         }
 
-        public static int EjecutarPython(double numero)
+        public static int EjecutarPython(double numero, int configuracionId)
         {
             var baseDir = AppContext.BaseDirectory;
             var candidateScript = Path.GetFullPath(
@@ -259,8 +256,8 @@ namespace WiiBalanceBoard
 
             if (!File.Exists(scriptPath))
             {
-                if (userInterface != null && !string.IsNullOrWhiteSpace(userInterface.PathMainPythonScript) && File.Exists(userInterface.PathMainPythonScript))
-                    scriptPath = userInterface.PathMainPythonScript;
+                if (interfazUsuario != null && !string.IsNullOrWhiteSpace(interfazUsuario.PathMainPythonScript) && File.Exists(interfazUsuario.PathMainPythonScript))
+                    scriptPath = interfazUsuario.PathMainPythonScript;
                 else
                 {
                     Console.WriteLine($"[EjecutarPython] Script no encontrado. Buscado: '{candidateScript}' y en userInterface.PathMainPythonScript.");
@@ -275,7 +272,6 @@ namespace WiiBalanceBoard
                 workingDir = baseDir;
             }
 
-            // Localizar python.exe en PATH (opcional)
             string TryFindInPath(string exeName)
             {
                 var pathEnv = Environment.GetEnvironmentVariable("PATH");
@@ -295,13 +291,14 @@ namespace WiiBalanceBoard
 
             var pythonExe = TryFindInPath("python.exe") ?? TryFindInPath("python") ?? "python";
 
-            Console.WriteLine($"[EjecutarPython] Ejecutando: '{pythonExe}' \"{scriptPath}\" {numero}");
+            Console.WriteLine($"[EjecutarPython] Ejecutando: '{pythonExe}' \"{scriptPath}\" {numero} {configuracionId}");
             Console.WriteLine($"[EjecutarPython] WorkingDirectory: '{workingDir}'");
 
             var psi = new ProcessStartInfo
             {
                 FileName = pythonExe,
-                Arguments = $"\"{scriptPath}\" {numero}",
+                // <-- aquí se añaden ambos parámetros: numero y configuracionId
+                Arguments = $"\"{scriptPath}\" {numero} {configuracionId}",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -309,20 +306,13 @@ namespace WiiBalanceBoard
                 WorkingDirectory = workingDir
             };
 
-            // Forzar UTF-8 para la comunicación con el proceso Python
-            try
-            {
-                psi.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
-            }
-            catch { /* no crítico */ }
-
-            // Asegurar que .NET decodifique como UTF-8
+            try { psi.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8"; } catch { }
             try
             {
                 psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
                 psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
             }
-            catch { /* disponible en .NET Framework 4.8; si no, el env var ayuda */ }
+            catch { }
 
             var sbOut = new System.Text.StringBuilder();
             var sbErr = new System.Text.StringBuilder();

@@ -2,6 +2,55 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+
+def CalcularEventosDeDesequilibrio(df, min_muestras=5):
+
+    def analizar_columna(columna):
+        col = columna.astype(int)
+        grupos = col.groupby((col != col.shift()).cumsum())
+        
+        duraciones = [len(grupo) for _, grupo in grupos if grupo.iloc[0] == 1 and len(grupo) >= min_muestras]
+        count = len(duraciones)
+
+        if count == 0:
+            return count, 0.0, 0.0, 0.0, 0.0
+        
+        return (
+            count,
+            float(min(duraciones))*10,   # DuracionMinima
+            float(sum(duraciones) / count)*10,  # DuracionMedia
+            float(max(duraciones))*10,   # DuracionMaxima
+            float(sum(duraciones))*10    # DuracionTotal
+        )
+
+    vel,   vel_min,   vel_media,   vel_max,   vel_total   = analizar_columna(df['DesequilibrioVel'])
+    vel_x, vel_x_min, vel_x_media, vel_x_max, vel_x_total = analizar_columna(df['DesequilibrioVel_X'])
+    vel_y, vel_y_min, vel_y_media, vel_y_max, vel_y_total = analizar_columna(df['DesequilibrioVel_Y'])
+
+    return {
+        "PerdidasDesequilibrioVel":   vel,
+        "PerdidasDesequilibrioVel_X": vel_x,
+        "PerdidasDesequilibrioVel_Y": vel_y,
+
+        "DuracionMinimaDesequilibrioVel":   vel_min,
+        "DuracionMediaDesequilibrioVel":    vel_media,
+        "DuracionMaximaDesequilibrioVel":   vel_max,
+        "DuracionTotalDesequilibrioVel":    vel_total,
+
+        "DuracionMinimaDesequilibrioVel_X":  vel_x_min,
+        "DuracionMediaDesequilibrioVel_X":   vel_x_media,
+        "DuracionMaximaDesequilibrioVel_X":  vel_x_max,
+        "DuracionTotalDesequilibrioVel_X":   vel_x_total,
+
+        "DuracionMinimaDesequilibrioVel_Y":  vel_y_min,
+        "DuracionMediaDesequilibrioVel_Y":   vel_y_media,
+        "DuracionMaximaDesequilibrioVel_Y":  vel_y_max,
+        "DuracionTotalDesequilibrioVel_Y":   vel_y_total,
+    }
+
+
+
+
 def Calcular_metricas(df, usuarioId, numeroPruebas):
     """
     Calcula métricas de equilibrio a partir de los datos del COP suavizados.
@@ -32,6 +81,8 @@ def Calcular_metricas(df, usuarioId, numeroPruebas):
     # por otro lado, 
     rms = np.sqrt(np.mean((df["COP_X"] - mean_copx)**2 + (df["COP_Y"] - mean_copy)**2))
 
+    dic = CalcularEventosDeDesequilibrio(df)
+
     metricas = {
         "UsuarioId": usuarioId,
         "NumeroPruebas": numeroPruebas,
@@ -40,7 +91,22 @@ def Calcular_metricas(df, usuarioId, numeroPruebas):
         "LongitudTrayectoria": longitud_trayectoria,
         "AreaRectangulo": area_rectangulo,
         "RMS": rms,
-        "TimeStamp": datetime.now()
+        "TimeStamp": datetime.now(),
+        "PerdidasDesequilibrioVel": dic['PerdidasDesequilibrioVel'],
+        "PerdidasDesequilibrioVel_X": dic['PerdidasDesequilibrioVel_X'],
+        "PerdidasDesequilibrioVel_Y": dic['PerdidasDesequilibrioVel_Y'],
+        "DuracionMinimaEnDesequilibrio": dic['DuracionMinimaDesequilibrioVel'],
+        "DuracionMediaDesequilibrio": dic['DuracionMediaDesequilibrioVel'],
+        "DuracionMaximaDesequilibrio": dic['DuracionMaximaDesequilibrioVel'],
+        "DuracionTotalDesequilibrio": dic['DuracionTotalDesequilibrioVel'],
+        "DuracionMinimaEnDesequilibrio_X": dic['DuracionMinimaDesequilibrioVel_X'],
+        "DuracionMediaDesequilibrio_X": dic['DuracionMediaDesequilibrioVel_X'],
+        "DuracionMaximaDesequilibrio_X": dic['DuracionMaximaDesequilibrioVel_X'],
+        "DuracionTotalDesequilibrio_X": dic['DuracionTotalDesequilibrioVel_X'],
+        "DuracionMinimaEnDesequilibrio_Y": dic['DuracionMinimaDesequilibrioVel_Y'],
+        "DuracionMediaDesequilibrio_Y": dic['DuracionMediaDesequilibrioVel_Y'],
+        "DuracionMaximaDesequilibrio_Y": dic['DuracionMaximaDesequilibrioVel_Y'],
+        "DuracionTotalDesequilibrio_Y": dic['DuracionTotalDesequilibrioVel_Y'],
     }
 
     print("✅ Métricas calculadas:")
